@@ -135,7 +135,7 @@ express Statement of Purpose.
 
 CC0 waives copyright in this text; per section 4(a) above, it does not
 waive trademark rights. Hyperflow™ is a trademark. Describing a
-conforming implementation as a Hyperflow, or saying that a product
+conforming implementation as a Hyperflow implementation, or saying that a product
 implements Hyperflow, is welcome and expected. Using the name to brand a
 non-conforming product, or to imply endorsement by hyperflow.org, is not
 licensed.

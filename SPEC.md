@@ -1,188 +1,142 @@
-# Hyperflow — the specification
+# Hyperflow specification
 
-v0.3.0
+Hyperflow is an agentic extension of hypermedia.
 
-## Short version
+## Scope
 
-A Hyperflow is an ordered sequence of Panels. Think of each Panel as a web
-page with one job. Behind every Panel there's a Shadow Context — the
-Hyperflow's notes about that Panel, kept up to date. When you request the
-next Panel, the Request carries what you actually marked, not the whole
-Hyperflow; if the agent needs more, the shadow contexts are right there. A
-successful Request adds exactly one Panel to the end, and a failed one
-changes nothing at all. A Panel gets generated once, then rendered and refreshed like any page you've ever shipped — the
-structure's fixed, the data stays live. And a Hyperflow is meant to be
-kept: pinned, reopened, picked up next week, handed to a teammate.
+This specification defines Hyperflow's concepts, their relationships, and
+conceptual behavior. It gives web developers, web tool developers, and their
+agents a shared basis for building and evaluating implementations. Technical
+implementation and interface design are outside its scope.
 
-## Glossary
+Hyperflow remains a proposal. The definitions and behavior described here
+establish its current meaning and are open to deliberate revision.
 
-**Hyperflow** — one ordered trail of Panels: you pin a Hyperflow,
-reopen it, hand it to someone. The word also names the model as
-a whole, the way "hypertext" named both the medium and the material, and
-context tells the two apart.
+## The paradigm
 
-**Panel** — a page with one job, rendered by your app. It can be a
-document with media and widgets in it or fully interactive. A Panel at
-the end of a
-Hyperflow stands on everything before it, through the shadow contexts. And inside a Panel, a hyperlink is still
-just a hyperlink: clicking one is normal web navigation, not a Request.
-Routing normal navigation through generation would just rebuild the
-browser, slowly.
+Hyperflow encompasses working with material on a webpage through Markup and
+Markup Notes, saving them, requesting agentic work, and using the resulting
+webpages. The name refers to this whole paradigm.
 
-**Request** — how a Hyperflow grows. Every Request starts from marked
-material, and there are two ways to mark: a Highlight, which someone set
-up ahead of time (marked text or media with a prompt behind it), and an
-Annotation, which the user makes on the spot (select something, attach a
-thought, ask). Either way the Request carries what was marked and said,
-plus which Panel it extends. The Request supplies the subject, and the
-Shadow Context supplies the situation. How highlights and annotations look
-in your app is your call.
+The person selects the material and contributes the words attached to it.
+An explicit request starts agentic work from that saved material and note.
+The work produces a regular, complete webpage for the person to explore and
+use. Selecting, saving, generation, and navigation are actions within
+Hyperflow.
 
-**Render** — the current presentation of a Panel, with its references
-resolved against live sources. Anything that will go stale is stored as a
-reference at generation and looked up at render time.
+## Web material
 
-**Refresh** — resolving those references again and presenting the Panel
-again. It's the same gesture as reloading a page, with the same guarantee:
-the page you had, with current data. Panels can also update themselves
-internally — polling, streams, whatever your pages already do — and none
-of that touches the Hyperflow.
+Web material is the content a person encounters on a webpage. It can include
+text, images, video, sound, and other hypermedia. A selection identifies the
+material the person is working with: a passage, an image or part of an image,
+a moment or interval in video or sound, or another identifiable part.
 
-**Shadow Context** — the notes kept behind each Panel: what it is, what
-it's showing right now, what its references currently resolve to. It
-updates when its Panel renders or refreshes. When a new Panel is being
-generated, every Shadow Context in the Hyperflow is available; the agent
-takes what it needs, and the new Panel cites what was used. Private drafts
-and annotations nobody submitted stay out by default.
+The selected material supplies the subject for the person's attached words.
+Understanding those words depends on understanding what they refer to.
+For example, “Explain this step” can concern a selected instruction in a
+written guide or an action shown in a selected interval of video. The same
+words refer to different material in each case.
 
-**Panel Engine** — the thing that satisfies Requests: a Request goes in, a
-Render comes back. Caching, app data, templates, agents, reference
-resolution, shadow upkeep — all of that lives behind this boundary, and
-none of it is prescribed here.
+The relationship between a selection and its surrounding material also
+contributes meaning. A passage belongs to a document; a detail belongs to an
+image; an interval belongs to a sequence. Selection identifies the subject
+of the person's words within that setting.
 
-## Rules
+## Markup
 
-These rules are what make something a Hyperflow.
+A **Markup** is the highlight on material a person selects. It identifies
+the material to which the person's Markup Note is attached.
 
-### One ordered sequence
+The selected material, its Markup, and its Markup Note have distinct roles.
+In a highlighted paragraph, the paragraph supplies the material, the
+highlight is the Markup, and the attached words are the Markup Note.
+Highlighting an image region establishes the same relationship with visual
+material.
 
-A Hyperflow is one sequence, in order. It can be a horizontal row on a
-desktop and a stack of sheets on a phone — layout is yours, but membership
-and order aren't. And it's the actual Panels too, not a strip of
-thumbnails standing in for them.
+### Saving a Markup
 
-Why so strict? Because the order is the explanation. Branch it into a
-canvas and arranging things becomes the user's job again, and the
-Hyperflow stops telling the story of how the inquiry went.
+Saving retains the Markup and its Markup Note together. This keeps the
+person's words associated with the material they selected. The saved Markup
+and Markup Note can be inspected without requesting agentic work.
 
-### One successor, or nothing
+Saving does not start generation. The person separately requests work from
+the saved material and note.
 
-If a Request works, exactly one Panel is added at the end, and it's a real
-page — links work, controls work, refresh shows current data, and you can
-mark it and continue from it like anything else in the Hyperflow. If a
-Request fails or gets abandoned, nothing changes: no spinner in the
-sequence, no error card, no half-rendered stub that fills in later. Work
-in progress lives outside the Hyperflow until it's done.
+### Managing a Markup
 
-This is the rule that keeps a Hyperflow a record.
+A person can revise the attached Markup Note and save their changes. They
+can also delete the Markup, removing its highlight and attached Markup Note
+without deleting the underlying web material.
 
-### The Hyperflow is not the prompt
+These actions concern what the person has saved. Inspecting, revising,
+saving, or deleting a Markup does not by itself request generation.
 
-Panels are for the user. What the model gets is the Request — the marked
-material and what the user said — plus whatever it deliberately pulls from
-the Shadow Contexts, and the new Panel cites what it used. Nothing enters
-the prompt just because it was on screen.
+## Markup Note
 
-The lazy version is pasting the whole Hyperflow in. Do that and you've
-rebuilt ambient chat: answers grounded in everything, citing nothing, and
-nobody can tell where any claim came from.
+A **Markup Note** is the person's written note attached to a Markup. It
+expresses what the person has to say or asks to have done in relation to the
+selected material. It can contain a question, an observation, or a direction
+for agentic work.
 
-### An effect is not a step
+The attachment connects the words to their subject. A Markup Note can
+therefore refer to the selected material without restating it. “Explain
+this for a beginner” takes its subject from the material identified by the
+Markup.
 
-Controls on a Panel can do anything your app allows — read, write, kick
-off a job. None of it moves the Hyperflow, which grows only when someone
-asks for the next Panel.
+The person's words also distinguish different uses of the same material.
+In one illustrative use of a passage, the Markup Note might say “Explain
+this for a beginner.” In another use of that passage, it might say “Challenge
+this argument.” Both concern the same text, but they ask for different work.
+The selected material and the Markup Note contribute together to what
+generation addresses.
 
-| What happened                         | What the Hyperflow does |
-| ------------------------------------- | ----------------------- |
-| Something updated inside a Panel      | Nothing                 |
-| A backend read, write, or action ran  | Nothing                 |
-| A Request succeeded                   | Adds exactly one Panel  |
-| A Request failed                      | Nothing                 |
+## Generation
 
-## Smallest real version
+Generation is the agentic work started by a person's explicit request using
+the saved material and Markup Note. The material provides the subject, and
+the person's words guide the work in relation to it.
 
-A list of panels in client state
-and one function that requests the next one: append exactly one on
-success, change nothing on failure, keep a note behind each panel for its
-shadow context, resolve references at render time. That keeps all four
-rules. And a Panel can be as humble as a block of markdown with a list of
-references — "a real page" is about the role it plays in the Hyperflow.
+### The generation request
 
-Four quick checks to know you've got one:
+The request initiates an agentic workflow. It is separate from selecting
+material, writing a Markup Note, and saving. A person who saves without
+requesting generation has retained their Markup and Markup Note without
+starting that work.
 
-- Abandon a request mid-flight and let it resolve late anyway. The
-  Hyperflow is unchanged.
-- Scroll back three panels. Each one still works — links click, refresh
-  shows current data.
-- Press a control that does something in the backend. The Hyperflow
-  didn't move.
-- Look at what was actually sent to the model and what came back. Marked
-  material and drawn shadow context went in, a page that cites its inputs
-  came out, and the Hyperflow itself appears nowhere in the prompt.
+### Agentic work
 
-## Break the rest
+The agent works with the selected material in light of the Markup Note to
+produce a complete webpage. The note might ask for an explanation, a
+comparison, an adaptation, or other work concerning that material.
 
-Deliberately not prescribed: the shape of Requests and Renders, how Panels
-and references are identified, where the first Panel comes from (that
-one's the application's), what exactly goes into a Shadow Context and when
-it updates, caching, storage, transport, model providers, schemas, and
-consistency while a Hyperflow changes.
+For example, a person could select a configuration example in documentation
+and attach the Markup Note “Adapt this for an environment with two
+application servers.” A generation request from that saved material and
+note could produce a webpage explaining an adapted configuration.
 
-Your implementation will still run into real decisions, and some of them
-don't have settled answers yet. The ones that matter:
+## Generated webpages
 
-- where in-flight work lives, and how the append stays atomic when
-  requests race or get cancelled;
-- what happens when someone continues from an earlier Panel — where the
-  successor goes, and what becomes of the Panels after that point;
-- what unsaved work has to be dealt with before any Panel is removed;
-- how selected material is addressed exactly and durably, without copying
-  it;
-- when Shadow Contexts update, what goes into them, and how a user can
-  tell how current a Panel is;
-- how people find their Hyperflows without the finding UI becoming part
-  of any Hyperflow.
+A generated webpage is the regular, complete webpage produced by the
+agentic work. It gives the result a form the person can read, explore, and
+use. “Generated” identifies how the webpage came into being; the page
+remains part of the web.
 
-When you make these calls, write them down in this vocabulary. Shared
-words are the whole point: two people who built this differently should be
-able to compare notes without talking past each other.
+The page's content serves the work requested from the selected material and
+Markup Note. It could be an explanation, a comparison, a plan, a tool, or
+another useful webpage. These illustrate possible results within the
+paradigm.
 
-## Where a Hyperflow belongs
+### Continued browsing
 
-When someone asks for a chat sidebar, ask where the third answer lands
-once the second one turns out to matter.
+The resulting webpage can itself provide material for a Markup and Markup
+Note. The person can select something there, attach their words, save them,
+and request further work. The same concepts apply when the selected
+material is on a page produced through Hyperflow.
 
-When someone asks for a dashboard, check whether it's really an inquiry —
-whether the next question depends on what the last screen showed.
-
-When someone says "add AI to our app," find the work that's exploratory
-and evidence-heavy. That's where a Hyperflow belongs: every answer lands
-as a page you can keep going from. For exact, repeatable operations, a
-form or a CLI is still the better tool — don't build Hyperflow-skinned
-CRUD.
-
-And if you're the model inside a Panel Engine right now: pull from the
-Shadow Contexts deliberately and cite what you use, produce a page rather
-than a message, and remember you don't decide what joins the Hyperflow —
-the transaction that places your Panel does.
-
-*One last thing about how to hold this document: it's a seed. It
-prescribes the bare minimum on purpose, because where this idea settles is
-something building will find. The terms and design are established here
-to communicate and to focus the search — enough to think with, which
-might mean breaking some of them. Keep the short version and the four rules. The rest is yours.*
+Ordinary links can also lead onward. Links and Markups can coexist within
+the same webpage and the same browsing experience.
 
 ---
 
-*This text is dedicated to the public domain (CC0 1.0). Hyperflow™ is a trademark. · hyperflow.org*
+*This text is dedicated to the public domain (CC0 1.0). Hyperflow™ is
+claimed as a trademark. · hyperflow.org*
